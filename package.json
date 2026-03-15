@@ -1,0 +1,43 @@
+{
+  "name": "ofstride-redesign",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "api": "..\\.venv\\Scripts\\uvicorn.exe api.app:app --host 0.0.0.0 --port 5175 --reload",
+    "agent": "..\\.venv\\Scripts\\python.exe -m new_agent.server",
+    "server": "..\\.venv\\Scripts\\uvicorn.exe api.app:app --host 0.0.0.0 --port 5175",
+    "dev:full": "concurrently -k -n web,api,agent \"npm run dev\" \"npm run api\" \"npm run agent\"",
+    "server:legacy": "node lead-server.cjs",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "libphonenumber-js": "^1.11.9",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-router-dom": "^7.13.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^9.2.0",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.17",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.46.4",
+    "vite": "^7.2.4"
+  }
+}
