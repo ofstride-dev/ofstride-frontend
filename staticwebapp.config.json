@@ -1,0 +1,57 @@
+{
+  "$schema": "https://aka.ms/azure/static-web-apps-cli/schema",
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["/api/*", "/*.{css,gif,ico,jpg,js,png,svg,webp,woff,woff2}"]
+  },
+  "mimeTypes": {
+    ".json": "application/json"
+  },
+  "auth": {
+    "identityProviders": {
+      "azureActiveDirectory": {
+        "userDetailsClaim": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier",
+        "enabled": false
+      }
+    },
+    "fileServer": {
+      "permissions": [
+        {
+          "roles": ["anonymous"],
+          "staticContentHeaders": [
+            {
+              "path": "/**",
+              "headers": {
+                "Cache-Control": "public, max-age=3600",
+                "X-Content-Type-Options": "nosniff"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "responseOverrides": {
+    "400": {
+      "rewrite": "/404.html"
+    },
+    "404": {
+      "rewrite": "/404.html"
+    }
+  },
+  "globalHeaders": {
+    "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://;"
+  },
+  "routes": [
+    {
+      "route": "/api/*",
+      "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+      "allowedRoles": ["anonymous"],
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization"
+      }
+    }
+  ]
+}

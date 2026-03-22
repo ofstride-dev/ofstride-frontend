@@ -1,0 +1,66 @@
+Yuvraj Singh
+contact-8296383549
+git-github.com/yuvrajgitwork
+kaggle-kaggle.com/yuvrajcs18
+email-yuvraj17nov@gmail.com
+linkedin-linkedin.com/in/yuvraj17jan
+
+
+
+Programming Languages:
+Python (Pandas, NumPy, Scikit learn, TensorFlow/PyTorch (if applicable)), SQL (MySQL, PostgreSQL), R.
+Machine Learning:
+Linear Regression, Logistic
+Regression, Decision Trees, Random Forests, Gradient
+Boosting, Clustering (K-means, etc.), Neural Networks (CNNs, RNNs),Reinforcement learning, Data science, MLOps,
+Model Evaluation (Accuracy, Precision, Recall, F1-score, AUC-ROC,
+Cross-Validation)
+
+AI :
+LLM fine-tuning
+(LoRA/QLoRA), RAG (Retrieval Augmented Generation), Vector embedding, LangChain,
+HuggingFace
+Data Visualization: Matplotlib, Seaborn, Tableau/Power BI
+Data Engineering: ETL Processes, Data Pipelines,
+Spark/Hadoop
+Cloud Computing Azure AI / ML Services. Azure Foundry, Open AI. : AWS (S3, EC2,
+SageMaker.),
+Statistical Analysis: Hypothesis Testing, Regression Analysis, Time Series Analysis
+Summary:
+ Data	Scientist	 with	experience		in developing	and deploying machine	learning models, leveraging strong analytical skills and a foundation	in statistical analysis. Proficient in Python (Pandas, NumPy, Scikit learn), SQL, and data visualization. Demonstrated ability to extract actionable insights from complex datasets and improve business outcomes. Additionally, experienced in building I-powered	solutions, including RAG-based knowledge workers using	LangChain and fine-tuning LLMs with LoRA/QLoRA, showcasing a	strong understanding of
+modern AI techniques.
+
+Work Experience:
+Ofstride services:
+Sprinklr- Assc Data Scientist (Nov 22 - Jun 24)
+Developed NLP and forecasting models on high-volume customer and social media data to predict trends and customer behavior. Impeoved churn rate by 25%.
+Implemented end-to-end ML workflows including feature engineering, model evaluation, and model monitoring. Improved model performance and business impact through continuous optimization and stakeholder alignment.
+Sprinklr- DevOps Associate (Jun 22 — Nov 22)
+Automated data reporting processes using Python and SQL, saving 2-3 hours per week and improving data accuracy. Configured and maintained CI/CD pipelines with Jenkins and GitLab. 
+	Collaborated with development teams to identify and resolve software bottlenecks, ensuring optimal performance.
+Ola Electric: Data Science Intern(Sep 21 - Oct 21)
+
+Certification:
+
+Python certified Entry Level
+Google machine learning crash course
+Kaggle 2x expert (notebook, datasets)
+
+Education:
+
+Bachelor of Engineering- BMS College of Engineering(2022)
+Xllth— Army Public School BangaIore(2017) Xth— Army Public School BangaIore(2015)
+Examined extensive datasets to identify actionable patterns
+Redcarpet: Strategy Intern (Aug 21 - Sep 21)
+Leveraged advanced machine learning techniques in the creation of credit financing models aligning with updated standards.
+Formulated strategies to enhance system functionality.
+
+
+
+AI/ML Experience:
+AI University Counsellor Full stack: Built a decision-first AI University Counsellor that models real counsellor workflows using LLM orchestration and structured reasoning. Implemented profile intelligence, eligibility scoring, and personalized academic pathway recommendations. Designed the system as a functional prototype demonstrating real-world feasibility and explainability.
+Made Al-powered brochure generator that scrapes and navigates company websites intelligently.
+OpenSource GenAI- Built automated solutions using HuggingFace
+Built AI knowledge-worker using RAG with Vector Embeddings and LangChain
+Fine-tuned frontier LLMs using LoRA/QLoRA
+	Built Autonomous multi agent system collaborating with models to spot deals and notify of special bargains.
