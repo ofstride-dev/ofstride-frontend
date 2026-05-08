@@ -38,18 +38,11 @@ const leadApiBase = import.meta.env.VITE_LEAD_API || "";
 const initialMessage: ChatMessage = {
   id: "welcome",
   type: "bot",
-  content: "👋 Hi! I’m Offstride AI Assist. I’ll ask a few quick questions and then help you with answers or connect you with the right expert. What’s your name?",
+  content:
+    "👋 Hi! I'm Saarthi, your Ofstride guide. I'll ask a few quick questions and then help you with answers or connect you with the right expert. What's your name?",
 };
 
-const AI_FALLBACK_RESPONSES = [
-  "Thanks for sharing. I’m having trouble reaching our AI brain right now, but I can still help connect you with the right consultant.",
-  "I can’t fetch an AI answer at the moment. If you’d like, I can schedule a quick call with a specialist.",
-  "Our AI service is temporarily unavailable. I can still guide you to the right team or book a consult.",
-];
-
-const randomFallback = () => AI_FALLBACK_RESPONSES[Math.floor(Math.random() * AI_FALLBACK_RESPONSES.length)];
-
-const withTimeout = async <T,>(promise: Promise<T>, timeoutMs = 12000): Promise<T> => {
+const withTimeout = async <T,>(promise: Promise<T>, timeoutMs = 20000): Promise<T> => {
   let timeoutId: number | null = null;
   const timeoutPromise = new Promise<never>((_, reject) => {
     timeoutId = window.setTimeout(() => reject(new Error("AI_TIMEOUT")), timeoutMs);
@@ -57,11 +50,13 @@ const withTimeout = async <T,>(promise: Promise<T>, timeoutMs = 12000): Promise<
   try {
     return await Promise.race([promise, timeoutPromise]);
   } finally {
-    if (timeoutId !== null) {
-      window.clearTimeout(timeoutId);
-    }
+    if (timeoutId !== null) window.clearTimeout(timeoutId);
   }
 };
+
+// Always unique message IDs — no duplicates even if two messages arrive in the same ms
+let _msgCounter = 0;
+const nextId = (type: "bot" | "user") => `${Date.now()}-${++_msgCounter}-${type}`;
 
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -82,9 +77,13 @@ export function ChatWidget() {
   });
   const [pendingConsultant, setPendingConsultant] = useState<ConsultantInfo | null>(null);
   const [awaitingNotify, setAwaitingNotify] = useState(false);
-  const sessionIdRef = useRef<string>(
-    typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`
-  );
+
+  // Holds the Saarthi session_id returned by /session/init
+  const sessionIdRef = useRef<string>("");
+
+  // Ensures /session/init is only called once per conversation
+  const saarthiSeededRef = useRef(false);
+
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -95,35 +94,102 @@ export function ChatWidget() {
     setMessages((prev) => [...prev, message]);
   };
 
+  // ── Core Saarthi chat call — uses session_id from /session/init ───────────
+
+  const callSaarthi = async (message: string): Promise<string> => {
+    const request = async () => {
+      const response = await fetch(`${leadApiBase}/api/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message, session_id: sessionIdRef.current }),
+      });
+      if (!response.ok) throw new Error(`HTTP_${response.status}`);
+      const data = (await response.json()) as Record<string, unknown>;
+      return (
+        (typeof data.text === "string" && data.text) ||
+        (typeof data.answer === "string" && data.answer) ||
+        (typeof data.response === "string" && data.response) ||
+        (typeof data.output === "string" && data.output) ||
+        "Could you share a bit more detail?"
+      );
+    };
+
+    try {
+      const text = await withTimeout(request());
+      setLlmStatus("ok");
+      return text;
+    } catch {
+      setLlmStatus("error");
+      return "I'm having a little trouble right now — please try again in a moment.";
+    }
+  };
+
+  // ── Hand off to Saarthi via /session/init once intake completes ──────────
+  // This is the ONLY place /session/init is called.
+  // It sends all collected lead data at once so Saarthi never re-asks.
+
+  const seedSaarthi = async (completedLead: LeadInfo): Promise<string> => {
+    if (saarthiSeededRef.current) return "";
+    saarthiSeededRef.current = true;
+
+    const response = await fetch(`${leadApiBase}/session/init`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contact_name: completedLead.name,
+        work_email: "",
+        phone_number: completedLead.phone,
+        location: completedLead.location,
+        company_name: completedLead.company,
+        task_summary: completedLead.taskSummary,
+      }),
+    });
+
+    if (!response.ok) throw new Error("init_failed");
+
+    const data = (await response.json()) as {
+      session_id: string;
+      greeting: string;
+    };
+
+    // Store Saarthi's session_id — all subsequent /api/chat calls use this
+    sessionIdRef.current = data.session_id;
+    setLlmStatus("ok");
+
+    // After init, send the task summary as the first real message so
+    // Saarthi has it in its conversation history and won't re-ask
+    if (completedLead.taskSummary) {
+      const firstReply = await callSaarthi(completedLead.taskSummary);
+      return firstReply;
+    }
+
+    return data.greeting || `Hi ${completedLead.name}! How can I help you today?`;
+  };
+
+  // ── Consultant helpers (unchanged) ───────────────────────────────────────
+
   const parseConsultants = (csv: string): ConsultantInfo[] => {
     const lines = csv.split(/\r?\n/).filter(Boolean);
     if (lines.length <= 1) return [];
-
     return lines.slice(1).map((line) => {
-      const parts = line.split(",").map((part) => part.trim()).filter((part) => part.length > 0);
+      const parts = line.split(",").map((p) => p.trim()).filter((p) => p.length > 0);
       const name = parts[0] || "";
       const location = parts[1] || "";
       const mobile = parts[2] || "";
       let role = "";
       let email = "";
-
-      if (parts.length >= 5) {
-        role = parts[3] || "";
-        email = parts.slice(4).join(",").trim();
-      } else if (parts.length === 4) {
-        email = parts[3] || "";
-      }
-
+      if (parts.length >= 5) { role = parts[3] || ""; email = parts.slice(4).join(",").trim(); }
+      else if (parts.length === 4) { email = parts[3] || ""; }
       return { name, location, mobile, role, email };
     });
   };
 
   const inferDomain = (text = "") => {
-    const value = text.toLowerCase();
-    if (value.includes("hire") || value.includes("hiring") || value.includes("recruit") || value.includes("recruitment") || value.includes("staffing") || value.includes("candidate") || value.includes("hr") || value.includes("human resources") || value.includes("talent")) return "hr";
-    if (value.includes("legal") || value.includes("compliance") || value.includes("contract")) return "legal";
-    if (value.includes("finance") || value.includes("cfo") || value.includes("tax") || value.includes("account")) return "finance";
-    if (value.includes("it") || value.includes("data") || value.includes("ai") || value.includes("cloud")) return "it";
+    const v = text.toLowerCase();
+    if (v.includes("hire") || v.includes("hiring") || v.includes("recruit") || v.includes("hr") || v.includes("human resources") || v.includes("talent")) return "hr";
+    if (v.includes("legal") || v.includes("compliance") || v.includes("contract")) return "legal";
+    if (v.includes("finance") || v.includes("cfo") || v.includes("tax") || v.includes("account")) return "finance";
+    if (v.includes("it") || v.includes("data") || v.includes("ai") || v.includes("cloud")) return "it";
     return "";
   };
 
@@ -134,132 +200,59 @@ export function ChatWidget() {
     it: ["it", "data", "ai", "cloud", "software", "infrastructure"],
   };
 
-  const selectConsultant = (consultants: ConsultantInfo[], taskSummary: string) => {
+  const selectConsultant = (consultants: ConsultantInfo[], taskSummary: string): ConsultantInfo | null => {
     if (!consultants.length) return null;
     const domain = inferDomain(taskSummary);
     const keywords = domainKeywords[domain] || [];
     const summary = taskSummary.toLowerCase();
-
     let bestScore = 0;
     let bestMatch: ConsultantInfo | null = null;
-
-    consultants.forEach((consultant) => {
-      const role = consultant.role.toLowerCase();
-      const email = consultant.email.toLowerCase();
+    consultants.forEach((c) => {
+      const role = c.role.toLowerCase();
+      const email = c.email.toLowerCase();
       let score = 0;
-
-      if (domain && (role.includes(domain) || email.includes(domain))) {
-        score += 3;
-      }
-
-      keywords.forEach((keyword) => {
-        if (summary.includes(keyword)) score += 2;
-        if (role.includes(keyword)) score += 1;
-        if (email.includes(keyword)) score += 1;
+      if (domain && (role.includes(domain) || email.includes(domain))) score += 3;
+      keywords.forEach((kw) => {
+        if (summary.includes(kw)) score += 2;
+        if (role.includes(kw)) score += 1;
+        if (email.includes(kw)) score += 1;
       });
-
-      if (score > bestScore) {
-        bestScore = score;
-        bestMatch = consultant;
-      }
+      if (score > bestScore) { bestScore = score; bestMatch = c; }
     });
-
     return bestScore > 0 ? bestMatch : null;
   };
 
-  const fetchResponse = async (question: string) => {
-    const payload = {
-      message: question,
-      session_id: sessionIdRef.current,
-    };
-
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-    };
-
-    const request = async () => {
-      const response = await fetch(`${leadApiBase}/api/chat`, {
+  const saveLead = async (payload: LeadInfo) => {
+    try {
+      await fetch(`${leadApiBase}/api/leads`, {
         method: "POST",
-        headers,
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
-      if (!response.ok) {
-        const error = new Error(`AI_HTTP_${response.status}`);
-        (error as Error & { status?: number }).status = response.status;
-        throw error;
-      }
-
-      const data = (await response.json()) as Record<string, unknown>;
-      return (
-        (typeof data.text === "string" && data.text) ||
-        (typeof data.answer === "string" && data.answer) ||
-        (typeof data.response === "string" && data.response) ||
-        (typeof data.output === "string" && data.output) ||
-        "Sorry, I couldn't find an answer."
-      );
-    };
-
-    try {
-      const text = await withTimeout(request());
-      setLlmStatus("ok");
-      return text;
-    } catch (error) {
-      const status = error instanceof Error && "status" in error ? (error as { status?: number }).status : undefined;
-      if (status === 502 || status === 503 || status === 504) {
-        setLlmStatus("error");
-        return randomFallback();
-      }
-      if (error instanceof Error && error.message === "AI_TIMEOUT") {
-        setLlmStatus("error");
-        return randomFallback();
-      }
-      setLlmStatus("error");
-      return randomFallback();
+    } catch {
+      // Non-critical — don't block the conversation if this fails
     }
   };
 
-  const saveLead = async (payload: LeadInfo) => {
-    const response = await fetch(`${leadApiBase}/api/leads`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to save lead");
-    }
-  };
-
-  const fetchConsultant = async (taskSummary: string) => {
+  const fetchConsultant = async (taskSummary: string): Promise<ConsultantInfo> => {
     try {
       const response = await fetch(`${leadApiBase}/api/consultant`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ taskSummary }),
       });
-
-      if (response.status === 404) {
-        throw new Error("NO_MATCH");
-      }
-
-      if (!response.ok) {
-        throw new Error("Failed to find consultant");
-      }
-
+      if (response.status === 404) throw new Error("NO_MATCH");
+      if (!response.ok) throw new Error("fetch_failed");
       const data = (await response.json()) as { consultant: ConsultantInfo };
       return data.consultant;
     } catch (error) {
+      // Fallback: try local CSV
       const fallbackResponse = await fetch("/data/consultants.csv");
-      if (!fallbackResponse.ok) {
-        throw error;
-      }
+      if (!fallbackResponse.ok) throw error;
       const csv = await fallbackResponse.text();
       const consultants = parseConsultants(csv);
       const match = selectConsultant(consultants, taskSummary);
-      if (!match) {
-        throw new Error("NO_MATCH");
-      }
+      if (!match) throw new Error("NO_MATCH");
       return match;
     }
   };
@@ -273,48 +266,28 @@ export function ChatWidget() {
   };
 
   const notifyConsultant = async (payload: { lead: LeadInfo; consultant: ConsultantInfo }) => {
-    const response = await fetch(`${leadApiBase}/api/notify`, {
+    await fetch(`${leadApiBase}/api/notify`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-
-    if (!response.ok) {
-      throw new Error("Failed to log notification");
-    }
   };
 
-  const processInput = async (value: string) => {
-    if (value === "open:hr-hiring") {
-      setIsOpen(false);
-      window.location.assign("/hire-through-ofstride");
-      return;
-    }
+  // ── Main input processor ──────────────────────────────────────────────────
 
-    if (value === "open:hr-candidate") {
-      setIsOpen(false);
-      window.location.assign("/apply-for-jobs");
-      return;
-    }
+  const processInput = async (value: string) => {
+    // Hard navigation shortcuts
+    if (value === "open:hr-hiring") { setIsOpen(false); window.location.assign("/hire-through-ofstride"); return; }
+    if (value === "open:hr-candidate") { setIsOpen(false); window.location.assign("/apply-for-jobs"); return; }
+
+    // Scheduling flow
     if (scheduleStage === "time") {
       const updatedTime = lead.preferredTime ? `${lead.preferredTime} - ${value}` : value;
       const tzMatch = value.match(/\b(UTC|GMT|IST|CST|EST|PST|MST|BST|CEST|EET)\b/i);
       const preferredTimezone = tzMatch ? tzMatch[0].toUpperCase() : lead.preferredTimezone;
-      setLead((prev) => ({
-        ...prev,
-        preferredTime: updatedTime,
-        preferredTimezone,
-      }));
+      setLead((prev) => ({ ...prev, preferredTime: updatedTime, preferredTimezone }));
       setScheduleStage("none");
-      addMessage({
-        id: `${Date.now()}-bot`,
-        type: "bot",
-        content: "Thanks! We’ll use that preferred time window when arranging the call.",
-        options: [
-          { label: "Talk to consultant", value: "talk to consultant" },
-          { label: "Ask another question", value: "continue" },
-        ],
-      });
+      addMessage({ id: nextId("bot"), type: "bot", content: "Thanks! We'll use that preferred time window when arranging the call.", options: [{ label: "Talk to consultant", value: "talk to consultant" }, { label: "Ask another question", value: "continue" }] });
       return;
     }
 
@@ -322,85 +295,63 @@ export function ChatWidget() {
       const label = value.replace("schedule:", "").trim();
       setLead((prev) => ({ ...prev, preferredTime: label }));
       setScheduleStage("time");
-      addMessage({
-        id: `${Date.now()}-bot`,
-        type: "bot",
-        content: "What time window works best (include timezone, e.g., 3–5 PM IST)?",
-      });
+      addMessage({ id: nextId("bot"), type: "bot", content: "What time window works best (include timezone, e.g., 3–5 PM IST)?" });
       return;
     }
+
+    // ── Deterministic intake ──────────────────────────────────────────────
     if (intakeStep !== "done") {
       if (intakeStep === "name") {
         setLead((prev) => ({ ...prev, name: value }));
         setIntakeStep("phone");
-        addMessage({
-          id: `${Date.now()}-bot`,
-          type: "bot",
-          content: "Thanks! What’s the best phone number to reach you?",
-        });
+        addMessage({ id: nextId("bot"), type: "bot", content: `Nice to meet you, ${value}! What's the best phone number to reach you?` });
         return;
       }
-
       if (intakeStep === "phone") {
         if (!isValidPhone(value)) {
-          addMessage({
-            id: `${Date.now()}-bot`,
-            type: "bot",
-            content: "Please enter a valid phone number with country code (e.g., +91 98765 43210).",
-          });
+          addMessage({ id: nextId("bot"), type: "bot", content: "Please enter a valid phone number with country code (e.g., +91 98765 43210)." });
           return;
         }
-
         setLead((prev) => ({ ...prev, phone: value }));
         setIntakeStep("location");
-        addMessage({
-          id: `${Date.now()}-bot`,
-          type: "bot",
-          content: "Great. What’s your location (city)?",
-        });
+        addMessage({ id: nextId("bot"), type: "bot", content: "Great. What's your location (city)?" });
         return;
       }
-
       if (intakeStep === "location") {
         setLead((prev) => ({ ...prev, location: value }));
         setIntakeStep("company");
-        addMessage({
-          id: `${Date.now()}-bot`,
-          type: "bot",
-          content: "What’s your company name?",
-        });
+        addMessage({ id: nextId("bot"), type: "bot", content: "What's your company name?" });
         return;
       }
-
       if (intakeStep === "company") {
         setLead((prev) => ({ ...prev, company: value }));
         setIntakeStep("task");
-        addMessage({
-          id: `${Date.now()}-bot`,
-          type: "bot",
-          content: "Briefly describe what you need help with (1–2 sentences).",
-        });
+        addMessage({ id: nextId("bot"), type: "bot", content: "Briefly describe what you need help with (1–2 sentences)." });
         return;
       }
-
       if (intakeStep === "task") {
-        const nextLead = { ...lead, taskSummary: value };
-        setLead(nextLead);
+        const completedLead = { ...lead, taskSummary: value };
+        setLead(completedLead);
         setIsLoading(true);
+
+        // Fire-and-forget lead save — never blocks the conversation
+        saveLead(completedLead);
+
         try {
-          await saveLead(nextLead);
+          // /session/init hands off ALL collected data to Saarthi at once.
+          // Then we immediately send the task as the first real message.
+          // Saarthi will never re-ask name/phone/location/company/task.
+          const saarthiReply = await seedSaarthi(completedLead);
           addMessage({
-            id: `${Date.now()}-bot`,
+            id: nextId("bot"),
             type: "bot",
-            content: "Thanks! You can now ask any questions. If you’d like to speak to a consultant, just say “talk to consultant.”",
-            options: [{ label: "Talk to consultant", value: "talk to consultant" }],
+            content: saarthiReply || `Got it! Feel free to ask me anything about Ofstride's services.`,
           });
-        } catch (error) {
-          console.error(error);
+        } catch {
           addMessage({
-            id: `${Date.now()}-bot`,
+            id: nextId("bot"),
             type: "bot",
-            content: "Thanks! I couldn’t save your details right now, but you can still ask any questions.",
+            content: "Thanks! You can now ask me anything, or say \"talk to consultant\" to speak with a specialist.",
             options: [{ label: "Talk to consultant", value: "talk to consultant" }],
           });
         } finally {
@@ -411,25 +362,16 @@ export function ChatWidget() {
       }
     }
 
+    // ── Consultant notification confirmation ──────────────────────────────
     if (awaitingNotify && pendingConsultant) {
       const wantsNotify = /^(yes|yep|sure|ok|okay|please)/i.test(value);
       if (wantsNotify) {
         setIsLoading(true);
         try {
           await notifyConsultant({ lead, consultant: pendingConsultant });
-          addMessage({
-            id: `${Date.now()}-bot`,
-            type: "bot",
-            content: "Got it. I’ve logged your request and our team will follow up shortly.",
-            options: [{ label: "Start over", value: "restart" }],
-          });
-        } catch (error) {
-          console.error(error);
-          addMessage({
-            id: `${Date.now()}-bot`,
-            type: "bot",
-            content: "I couldn’t log the notification just now. Please try again in a moment.",
-          });
+          addMessage({ id: nextId("bot"), type: "bot", content: "Got it. I've logged your request and our team will follow up shortly.", options: [{ label: "Start over", value: "restart" }] });
+        } catch {
+          addMessage({ id: nextId("bot"), type: "bot", content: "I couldn't log that just now. Please try again in a moment." });
         } finally {
           setIsLoading(false);
           setAwaitingNotify(false);
@@ -437,112 +379,59 @@ export function ChatWidget() {
         }
         return;
       }
-
-      addMessage({
-        id: `${Date.now()}-bot`,
-        type: "bot",
-        content: "No problem. Let me know if you want me to connect you later.",
-      });
+      addMessage({ id: nextId("bot"), type: "bot", content: "No problem. Let me know if you want me to connect you later." });
       setAwaitingNotify(false);
       setPendingConsultant(null);
       return;
     }
 
+    // ── Restart ───────────────────────────────────────────────────────────
     if (value === "restart") {
       setMessages([initialMessage]);
       setIntakeStep("name");
-      setLead({
-        name: "",
-        phone: "",
-        location: "",
-        company: "",
-        taskSummary: "",
-        preferredTime: "",
-        preferredTimezone: "",
-      });
+      saarthiSeededRef.current = false;
+      sessionIdRef.current = "";
+      setLead({ name: "", phone: "", location: "", company: "", taskSummary: "", preferredTime: "", preferredTimezone: "" });
       setScheduleStage("none");
       return;
     }
 
-    const wantsHiringForm = /(hire|hiring|recruit|recruitment|staffing|job opening|vacancy|position)/i.test(value);
-    const wantsCandidateForm = /(apply|candidate|resume|cv|job seeker|job application)/i.test(value);
-    if (wantsHiringForm || wantsCandidateForm) {
-      addMessage({
-        id: `${Date.now()}-bot`,
-        type: "bot",
-        content: "I can open the HR intake form right away. Which one do you need?",
-        options: [
-          { label: "Hire through Ofstride", value: "open:hr-hiring" },
-          { label: "Candidate profile", value: "open:hr-candidate" },
-        ],
-      });
+    // ── HR form shortcuts ─────────────────────────────────────────────────
+    if (/(hire|hiring|recruit|recruitment|staffing|job opening|vacancy|position)/i.test(value) ||
+        /(apply|candidate|resume|cv|job seeker|job application)/i.test(value)) {
+      addMessage({ id: nextId("bot"), type: "bot", content: "I can open the HR intake form right away. Which one do you need?", options: [{ label: "Hire through Ofstride", value: "open:hr-hiring" }, { label: "Candidate profile", value: "open:hr-candidate" }] });
       return;
     }
 
-    const wantsConsultant = /(talk|speak|call|phone|contact|consultant|whatsapp|hire|hiring|recruit|recruitment|staffing)/i.test(value)
-      || (/(hr|human resources|legal|finance|financial|it|data|ai|cloud)/i.test(value)
-        && /(need|service|help|support|connect|expert|advisor|hire|hiring|recruit)/i.test(value));
+    // ── Explicit consultant request ONLY ──────────────────────────────────
+    // Only triggers when user is clearly asking to be connected to a person.
+    // Does NOT trigger on questions like "I need help with AI agents".
+    const wantsConsultant =
+      /\b(talk to|speak to|speak with|connect me with|get me a|contact a)\b.{0,20}\b(consultant|expert|advisor|specialist|someone|person|human)\b/i.test(value) ||
+      /^(talk to consultant|speak to consultant|get a consultant|connect me)$/i.test(value.trim());
+
     if (wantsConsultant) {
       setIsLoading(true);
       try {
         const consultant = await fetchConsultant(lead.taskSummary || value);
         setPendingConsultant(consultant);
         setAwaitingNotify(true);
-        addMessage({
-          id: `${Date.now()}-bot`,
-          type: "bot",
-          content: `Here’s the best match: ${consultant.name} (${consultant.role || "Consultant"})\nPhone: ${consultant.mobile}\nEmail: ${consultant.email}\nWould you like me to notify them?`,
-          options: [
-            { label: "Yes, notify", value: "yes" },
-            { label: "Not now", value: "no" },
-          ],
-        });
+        addMessage({ id: nextId("bot"), type: "bot", content: `Here's the best match:\n\n${consultant.name} (${consultant.role || "Consultant"})\nPhone: ${consultant.mobile}\nEmail: ${consultant.email}\n\nWould you like me to notify them?`, options: [{ label: "Yes, notify", value: "yes" }, { label: "Not now", value: "no" }] });
       } catch (error) {
-        console.error(error);
-        const message = error instanceof Error && error.message === "NO_MATCH"
-          ? "We don’t have a listed specialist for this requirement yet. We’ll consult our partner network and share the right contact details soon."
-          : "I couldn’t find a consultant right now. Please share a bit more detail about your request.";
-        addMessage({
-          id: `${Date.now()}-bot`,
-          type: "bot",
-          content: message,
-        });
+        addMessage({ id: nextId("bot"), type: "bot", content: error instanceof Error && error.message === "NO_MATCH" ? "We don't have a listed specialist for this yet. We'll consult our partner network and be in touch." : "I couldn't find a consultant right now. Please share more detail about your request." });
       } finally {
         setIsLoading(false);
       }
       return;
     }
 
+    // ── Everything else → Saarthi ─────────────────────────────────────────
     setIsLoading(true);
-
     try {
-      const context = lead.taskSummary ? `\n\nClient context: ${lead.taskSummary}` : "";
-      const reply = await fetchResponse(`${value}${context}`);
-      addMessage({ id: `${Date.now()}-bot`, type: "bot", content: reply });
-      addMessage({
-        id: `${Date.now()}-bot`,
-        type: "bot",
-        content: "Would you like to schedule a call with a consultant?",
-        options: [
-          { label: "Today", value: "schedule:Today" },
-          { label: "Tomorrow", value: "schedule:Tomorrow" },
-          { label: "This week", value: "schedule:This week" },
-          { label: "Talk to consultant", value: "talk to consultant" },
-        ],
-      });
-    } catch (error) {
-      console.error(error);
-      addMessage({
-        id: `${Date.now()}-bot`,
-        type: "bot",
-        content: "Sorry, I’m having trouble right now. Would you like to schedule a call instead?",
-        options: [
-          { label: "Today", value: "schedule:Today" },
-          { label: "Tomorrow", value: "schedule:Tomorrow" },
-          { label: "This week", value: "schedule:This week" },
-          { label: "Talk to consultant", value: "talk to consultant" },
-        ],
-      });
+      const reply = await callSaarthi(value);
+      addMessage({ id: nextId("bot"), type: "bot", content: reply });
+    } catch {
+      addMessage({ id: nextId("bot"), type: "bot", content: "Sorry, I'm having trouble right now. Would you like to schedule a call instead?", options: [{ label: "Today", value: "schedule:Today" }, { label: "Tomorrow", value: "schedule:Tomorrow" }, { label: "This week", value: "schedule:This week" }, { label: "Talk to consultant", value: "talk to consultant" }] });
     } finally {
       setIsLoading(false);
     }
@@ -552,25 +441,21 @@ export function ChatWidget() {
     event.preventDefault();
     const value = input.trim();
     if (!value || isLoading) return;
-
-    addMessage({ id: `${Date.now()}-user`, type: "user", content: value });
+    addMessage({ id: nextId("user"), type: "user", content: value });
     setInput("");
     await processInput(value);
   };
 
   const handleOptionClick = async (option: ChatOption) => {
     if (isLoading) return;
-    addMessage({ id: `${Date.now()}-user`, type: "user", content: option.label });
+    addMessage({ id: nextId("user"), type: "user", content: option.label });
     await processInput(option.value);
   };
 
   return (
     <>
-      <button
-        className="btn btn-primary fixed bottom-6 right-6 z-50"
-        onClick={() => setIsOpen((prev) => !prev)}
-      >
-        {isOpen ? "Close" : "Chat with Offstride"}
+      <button className="btn btn-primary fixed bottom-6 right-6 z-50" onClick={() => setIsOpen((prev) => !prev)}>
+        {isOpen ? "Close" : "Chat with Ofstride"}
       </button>
 
       {isOpen && (
@@ -579,36 +464,26 @@ export function ChatWidget() {
             <div className="flex items-center gap-3">
               <span className="h-8 w-8 rounded-full bg-white/20" />
               <div className="flex flex-col">
-                <span className="text-sm font-semibold">Offstride Assistant</span>
+                <span className="text-sm font-semibold">Saarthi by Ofstride</span>
                 <span className={`text-[11px] ${llmStatus === "ok" ? "text-emerald-100" : llmStatus === "error" ? "text-amber-100" : "text-white/80"}`}>
-                  AI Assist: {llmStatus === "ok" ? "Online" : llmStatus === "error" ? "Temporarily offline" : "Connecting"}
+                  AI: {llmStatus === "ok" ? "Online" : llmStatus === "error" ? "Temporarily offline" : "Connecting…"}
                 </span>
               </div>
             </div>
             <button className="text-xs" onClick={() => setIsOpen(false)}>Close</button>
           </div>
+
           <div className="flex-1 space-y-4 overflow-y-auto bg-slate-50 p-4">
             {messages.map((message) => (
               <div key={message.id} className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}>
                 <div className="max-w-[80%]">
-                  <div
-                    className={`rounded-2xl px-4 py-3 text-sm ${
-                      message.type === "user"
-                        ? "bg-gradient-to-r from-primary-500 to-primary-600 text-white"
-                        : "border border-slate-200 bg-white text-slate-700"
-                    }`}
-                  >
+                  <div className={`rounded-2xl px-4 py-3 text-sm ${message.type === "user" ? "bg-gradient-to-r from-primary-500 to-primary-600 text-white" : "border border-slate-200 bg-white text-slate-700"}`}>
                     <p className="whitespace-pre-line">{message.content}</p>
                   </div>
                   {message.type === "bot" && message.options && message.options.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-2">
                       {message.options.map((option) => (
-                        <button
-                          key={option.label}
-                          type="button"
-                          className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600 transition hover:border-primary-300 hover:text-primary-600"
-                          onClick={() => handleOptionClick(option)}
-                        >
+                        <button key={option.label} type="button" className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600 transition hover:border-primary-300 hover:text-primary-600" onClick={() => handleOptionClick(option)}>
                           {option.label}
                         </button>
                       ))}
@@ -619,29 +494,25 @@ export function ChatWidget() {
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="max-w-[80%] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">
-                  Thinking…
-                </div>
+                <div className="max-w-[80%] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">Thinking…</div>
               </div>
             )}
             <div ref={messagesEndRef} />
           </div>
+
           <form className="flex gap-2 border-t border-slate-200 bg-white p-4" onSubmit={handleSubmit}>
             <input
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
               value={input}
-              onChange={(event) => setInput(event.target.value)}
-              placeholder={isLoading ? "Waiting for response" : "Type your message"}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={isLoading ? "Waiting for Saarthi…" : "Type your message"}
               disabled={isLoading}
             />
-            <button type="submit" className="btn btn-primary px-4" disabled={isLoading || !input.trim()}>
-              Send
-            </button>
+            <button type="submit" className="btn btn-primary px-4" disabled={isLoading || !input.trim()}>Send</button>
           </form>
+
           {llmStatus === "error" && (
-            <p className="px-4 pb-4 text-xs text-amber-600">
-              AI Assist is warming up. I can still connect you with a consultant.
-            </p>
+            <p className="px-4 pb-4 text-xs text-amber-600">AI Assist is warming up. I can still connect you with a consultant.</p>
           )}
         </div>
       )}
