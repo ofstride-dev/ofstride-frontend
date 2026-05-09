@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
+import { DATA_ENDPOINTS, logApiCall } from "../config/api";
 import heroImage from "../assets/img/hero/hero-02.png";
-
-const leadApiBase = import.meta.env.VITE_LEAD_API || "";
 
 /** ===== ResumeIQ UI (minimal, embedded) ===== */
 const COLORS = {
@@ -169,7 +168,9 @@ export function ApplyForJobs() {
 
     try {
       // 1) Save candidate profile (this is your existing DB + file save)
-      const saveRes = await fetch(`${leadApiBase}/api/hr/candidate`, { method: "POST", body: form });
+      const endpoint1 = DATA_ENDPOINTS.hrCandidate();
+      logApiCall(endpoint1, "POST");
+      const saveRes = await fetch(endpoint1, { method: "POST", body: form });
       if (!saveRes.ok) throw new Error("Failed to submit candidate profile");
 
       // 2) Analyze resume (separate endpoint)
@@ -178,7 +179,9 @@ export function ApplyForJobs() {
       const analyzeForm = new FormData();
       analyzeForm.append("resume", candidateResume);
 
-      const analyzeRes = await fetch(`${leadApiBase}/api/hr/candidate/analyze`, { method: "POST", body: analyzeForm });
+      const endpoint2 = DATA_ENDPOINTS.hrCandidateAnalyze();
+      logApiCall(endpoint2, "POST");
+      const analyzeRes = await fetch(endpoint2, { method: "POST", body: analyzeForm });
       const analyzeData = await analyzeRes.json().catch(() => ({}));
 
       if (!analyzeRes.ok || !analyzeData?.ok) {

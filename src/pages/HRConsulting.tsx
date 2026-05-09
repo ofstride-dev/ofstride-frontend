@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ConsultForm } from "../components/ConsultForm";
+import { DATA_ENDPOINTS, logApiCall } from "../config/api";
 import heroImage from "../assets/img/hero/hero-02.png";
-
-const leadApiBase = import.meta.env.VITE_LEAD_API || "";
 
 export function HRConsulting() {
   const [hiringStatus, setHiringStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -127,7 +126,9 @@ export function HRConsulting() {
     const form = new FormData(event.currentTarget);
     const payload = Object.fromEntries(form.entries());
     try {
-      const response = await fetch(`${leadApiBase}/api/hr/hiring`, {
+      const endpoint = DATA_ENDPOINTS.hrHiring();
+      logApiCall(endpoint, "POST");
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -150,7 +151,9 @@ export function HRConsulting() {
       form.append("resume", candidateResume);
     }
     try {
-      const response = await fetch(`${leadApiBase}/api/hr/candidate`, {
+      const endpoint = DATA_ENDPOINTS.hrCandidate();
+      logApiCall(endpoint, "POST");
+      const response = await fetch(endpoint, {
         method: "POST",
         body: form,
       });

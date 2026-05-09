@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
+import { AGENT_ENDPOINTS, DATA_ENDPOINTS, logApiCall } from "../config/api";
 
 type ChatMessage = {
   id: string;
@@ -32,8 +33,6 @@ type ConsultantInfo = {
   role: string;
   email: string;
 };
-
-const leadApiBase = import.meta.env.VITE_LEAD_API || "";
 
 const initialMessage: ChatMessage = {
   id: "welcome",
@@ -98,7 +97,9 @@ export function ChatWidget() {
 
   const callSaarthi = async (message: string): Promise<string> => {
     const request = async () => {
-      const response = await fetch(`${leadApiBase}/api/chat`, {
+      const endpoint = AGENT_ENDPOINTS.chat();
+      logApiCall(endpoint, "POST");
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message, session_id: sessionIdRef.current }),
@@ -132,7 +133,9 @@ export function ChatWidget() {
     if (saarthiSeededRef.current) return "";
     saarthiSeededRef.current = true;
 
-    const response = await fetch(`${leadApiBase}/session/init`, {
+    const endpoint = AGENT_ENDPOINTS.sessionInit();
+    logApiCall(endpoint, "POST");
+    const response = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -224,7 +227,9 @@ export function ChatWidget() {
 
   const saveLead = async (payload: LeadInfo) => {
     try {
-      await fetch(`${leadApiBase}/api/leads`, {
+      const endpoint = DATA_ENDPOINTS.leads();
+      logApiCall(endpoint, "POST");
+      await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -236,7 +241,9 @@ export function ChatWidget() {
 
   const fetchConsultant = async (taskSummary: string): Promise<ConsultantInfo> => {
     try {
-      const response = await fetch(`${leadApiBase}/api/consultant`, {
+      const endpoint = DATA_ENDPOINTS.consultant();
+      logApiCall(endpoint, "POST");
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ taskSummary }),
@@ -266,7 +273,9 @@ export function ChatWidget() {
   };
 
   const notifyConsultant = async (payload: { lead: LeadInfo; consultant: ConsultantInfo }) => {
-    await fetch(`${leadApiBase}/api/notify`, {
+    const endpoint = DATA_ENDPOINTS.notify();
+    logApiCall(endpoint, "POST");
+    await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),

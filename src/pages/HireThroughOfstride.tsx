@@ -1,7 +1,6 @@
 import { useState } from "react";
+import { DATA_ENDPOINTS, logApiCall } from "../config/api";
 import heroImage from "../assets/img/hero/hero-02.png";
-
-const leadApiBase = import.meta.env.VITE_LEAD_API || "";
 
 export function HireThroughOfstride() {
   const [hiringStatus, setHiringStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -15,7 +14,9 @@ export function HireThroughOfstride() {
     const form = new FormData(event.currentTarget);
     const payload = Object.fromEntries(form.entries());
     try {
-      const response = await fetch(`${leadApiBase}/api/hr/hiring`, {
+      const endpoint = DATA_ENDPOINTS.hrHiring();
+      logApiCall(endpoint, "POST");
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

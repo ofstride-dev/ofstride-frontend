@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-
-const leadApiBase = import.meta.env.VITE_LEAD_API || "";
+import { DATA_ENDPOINTS, logApiCall } from "../config/api";
 
 type OverviewData = {
   totalLeads: number;
@@ -32,7 +31,9 @@ export function AnalyticsSection() {
   }, [overview]);
 
   const fetchOverview = async () => {
-    const response = await fetch(`${leadApiBase}/api/charts/overview`);
+    const endpoint = DATA_ENDPOINTS.chartsOverview();
+    logApiCall(endpoint, "GET");
+    const response = await fetch(endpoint);
     if (!response.ok) {
       throw new Error("Failed to load chart data");
     }
@@ -42,7 +43,9 @@ export function AnalyticsSection() {
   };
 
   const fetchAgent = async (prompt: string) => {
-    const response = await fetch(`${leadApiBase}/api/charts/agent`, {
+    const endpoint = DATA_ENDPOINTS.chartsAgent();
+    logApiCall(endpoint, "POST");
+    const response = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ question: prompt }),
