@@ -34,6 +34,13 @@ type ConsultantInfo = {
   email: string;
 };
 
+// Response shape returned by /api/chat
+type SaarthiReply = {
+  text: string;
+  buttons: string[] | null;
+  escalate: boolean;
+};
+
 const initialMessage: ChatMessage = {
   id: "welcome",
   type: "bot",
@@ -56,6 +63,10 @@ const withTimeout = async <T,>(promise: Promise<T>, timeoutMs = 20000): Promise<
 // Always unique message IDs — no duplicates even if two messages arrive in the same ms
 let _msgCounter = 0;
 const nextId = (type: "bot" | "user") => `${Date.now()}-${++_msgCounter}-${type}`;
+
+// Convert button labels from agent into ChatOption array
+const buttonsToOptions = (buttons: string[]): ChatOption[] =>
+  buttons.map((b) => ({ label: b, value: b.toLowerCase() }));
 
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -93,10 +104,11 @@ export function ChatWidget() {
     setMessages((prev) => [...prev, message]);
   };
 
-  // ── Core Saarthi chat call — uses session_id from /session/init ───────────
+  // ── Core Saarthi chat call — uses session_id from /session/init ──────────
+  // Returns full SaarthiReply including buttons and escalate flag
 
-  const callSaarthi = async (message: string): Promise<string> => {
-    const request = async () => {
+  const callSaarthi = async (message: string): Promise<SaarthiReply> => {
+    const request = async (): Promise<SaarthiReply> => {
       const endpoint = AGENT_ENDPOINTS.chat();
       logApiCall(endpoint, "POST");
       const response = await fetch(endpoint, {
@@ -106,22 +118,28 @@ export function ChatWidget() {
       });
       if (!response.ok) throw new Error(`HTTP_${response.status}`);
       const data = (await response.json()) as Record<string, unknown>;
-      return (
+      const text =
         (typeof data.text === "string" && data.text) ||
         (typeof data.answer === "string" && data.answer) ||
         (typeof data.response === "string" && data.response) ||
         (typeof data.output === "string" && data.output) ||
-        "Could you share a bit more detail?"
-      );
+        "Could you share a bit more detail?";
+      const buttons = Array.isArray(data.buttons) ? (data.buttons as string[]) : null;
+      const escalate = typeof data.escalate === "boolean" ? data.escalate : false;
+      return { text, buttons, escalate };
     };
 
     try {
-      const text = await withTimeout(request());
+      const reply = await withTimeout(request());
       setLlmStatus("ok");
-      return text;
+      return reply;
     } catch {
       setLlmStatus("error");
-      return "I'm having a little trouble right now — please try again in a moment.";
+      return {
+        text: "I'm having a little trouble right now — please try again in a moment.",
+        buttons: null,
+        escalate: false,
+      };
     }
   };
 
@@ -129,8 +147,8 @@ export function ChatWidget() {
   // This is the ONLY place /session/init is called.
   // It sends all collected lead data at once so Saarthi never re-asks.
 
-  const seedSaarthi = async (completedLead: LeadInfo): Promise<string> => {
-    if (saarthiSeededRef.current) return "";
+  const seedSaarthi = async (completedLead: LeadInfo): Promise<SaarthiReply> => {
+    if (saarthiSeededRef.current) return { text: "", buttons: null, escalate: false };
     saarthiSeededRef.current = true;
 
     const endpoint = AGENT_ENDPOINTS.sessionInit();
@@ -159,17 +177,20 @@ export function ChatWidget() {
     sessionIdRef.current = data.session_id;
     setLlmStatus("ok");
 
-    // After init, send the task summary as the first real message so
-    // Saarthi has it in its conversation history and won't re-ask
+    // Send task summary as first real message so Saarthi responds to it
+    // directly and has it in conversation history — prevents re-asking
     if (completedLead.taskSummary) {
-      const firstReply = await callSaarthi(completedLead.taskSummary);
-      return firstReply;
+      return callSaarthi(completedLead.taskSummary);
     }
 
-    return data.greeting || `Hi ${completedLead.name}! How can I help you today?`;
+    return {
+      text: data.greeting || `Hi ${completedLead.name}! How can I help you today?`,
+      buttons: ["Tell me about your services", "Book a consultant call", "I have more details"],
+      escalate: false,
+    };
   };
 
-  // ── Consultant helpers (unchanged) ───────────────────────────────────────
+  // ── Consultant helpers ────────────────────────────────────────────────────
 
   const parseConsultants = (csv: string): ConsultantInfo[] => {
     const lines = csv.split(/\r?\n/).filter(Boolean);
@@ -296,7 +317,11 @@ export function ChatWidget() {
       const preferredTimezone = tzMatch ? tzMatch[0].toUpperCase() : lead.preferredTimezone;
       setLead((prev) => ({ ...prev, preferredTime: updatedTime, preferredTimezone }));
       setScheduleStage("none");
-      addMessage({ id: nextId("bot"), type: "bot", content: "Thanks! We'll use that preferred time window when arranging the call.", options: [{ label: "Talk to consultant", value: "talk to consultant" }, { label: "Ask another question", value: "continue" }] });
+      addMessage({
+        id: nextId("bot"), type: "bot",
+        content: "Thanks! We'll use that preferred time window when arranging the call.",
+        options: [{ label: "Talk to consultant", value: "talk to consultant" }, { label: "Ask another question", value: "continue" }],
+      });
       return;
     }
 
@@ -347,21 +372,19 @@ export function ChatWidget() {
         saveLead(completedLead);
 
         try {
-          // /session/init hands off ALL collected data to Saarthi at once.
-          // Then we immediately send the task as the first real message.
-          // Saarthi will never re-ask name/phone/location/company/task.
           const saarthiReply = await seedSaarthi(completedLead);
           addMessage({
             id: nextId("bot"),
             type: "bot",
-            content: saarthiReply || `Got it! Feel free to ask me anything about Ofstride's services.`,
+            content: saarthiReply.text || `Got it! Feel free to ask me anything about Ofstride's services.`,
+            options: saarthiReply.buttons ? buttonsToOptions(saarthiReply.buttons) : undefined,
           });
         } catch {
           addMessage({
             id: nextId("bot"),
             type: "bot",
             content: "Thanks! You can now ask me anything, or say \"talk to consultant\" to speak with a specialist.",
-            options: [{ label: "Talk to consultant", value: "talk to consultant" }],
+            options: buttonsToOptions(["Tell me about your services", "Book a consultant call", "I have more details"]),
           });
         } finally {
           setIsLoading(false);
@@ -378,7 +401,11 @@ export function ChatWidget() {
         setIsLoading(true);
         try {
           await notifyConsultant({ lead, consultant: pendingConsultant });
-          addMessage({ id: nextId("bot"), type: "bot", content: "Got it. I've logged your request and our team will follow up shortly.", options: [{ label: "Start over", value: "restart" }] });
+          addMessage({
+            id: nextId("bot"), type: "bot",
+            content: "Got it. I've logged your request and our team will follow up shortly.",
+            options: [{ label: "Start over", value: "restart" }],
+          });
         } catch {
           addMessage({ id: nextId("bot"), type: "bot", content: "I couldn't log that just now. Please try again in a moment." });
         } finally {
@@ -408,16 +435,20 @@ export function ChatWidget() {
     // ── HR form shortcuts ─────────────────────────────────────────────────
     if (/(hire|hiring|recruit|recruitment|staffing|job opening|vacancy|position)/i.test(value) ||
         /(apply|candidate|resume|cv|job seeker|job application)/i.test(value)) {
-      addMessage({ id: nextId("bot"), type: "bot", content: "I can open the HR intake form right away. Which one do you need?", options: [{ label: "Hire through Ofstride", value: "open:hr-hiring" }, { label: "Candidate profile", value: "open:hr-candidate" }] });
+      addMessage({
+        id: nextId("bot"), type: "bot",
+        content: "I can open the HR intake form right away. Which one do you need?",
+        options: [{ label: "Hire through Ofstride", value: "open:hr-hiring" }, { label: "Candidate profile", value: "open:hr-candidate" }],
+      });
       return;
     }
 
-    // ── Explicit consultant request ONLY ──────────────────────────────────
-    // Only triggers when user is clearly asking to be connected to a person.
-    // Does NOT trigger on questions like "I need help with AI agents".
+    // ── Explicit consultant request ───────────────────────────────────────
+    // Narrow regex — only triggers when user clearly wants to be connected,
+    // NOT on general questions that happen to mention these words
     const wantsConsultant =
       /\b(talk to|speak to|speak with|connect me with|get me a|contact a)\b.{0,20}\b(consultant|expert|advisor|specialist|someone|person|human)\b/i.test(value) ||
-      /^(talk to consultant|speak to consultant|get a consultant|connect me)$/i.test(value.trim());
+      /^(talk to consultant|speak to consultant|get a consultant|connect me|book a consultant|book a call)$/i.test(value.trim());
 
     if (wantsConsultant) {
       setIsLoading(true);
@@ -425,9 +456,18 @@ export function ChatWidget() {
         const consultant = await fetchConsultant(lead.taskSummary || value);
         setPendingConsultant(consultant);
         setAwaitingNotify(true);
-        addMessage({ id: nextId("bot"), type: "bot", content: `Here's the best match:\n\n${consultant.name} (${consultant.role || "Consultant"})\nPhone: ${consultant.mobile}\nEmail: ${consultant.email}\n\nWould you like me to notify them?`, options: [{ label: "Yes, notify", value: "yes" }, { label: "Not now", value: "no" }] });
+        addMessage({
+          id: nextId("bot"), type: "bot",
+          content: `Here's the best match:\n\n${consultant.name} (${consultant.role || "Consultant"})\nPhone: ${consultant.mobile}\nEmail: ${consultant.email}\n\nWould you like me to notify them?`,
+          options: [{ label: "Yes, notify", value: "yes" }, { label: "Not now", value: "no" }],
+        });
       } catch (error) {
-        addMessage({ id: nextId("bot"), type: "bot", content: error instanceof Error && error.message === "NO_MATCH" ? "We don't have a listed specialist for this yet. We'll consult our partner network and be in touch." : "I couldn't find a consultant right now. Please share more detail about your request." });
+        addMessage({
+          id: nextId("bot"), type: "bot",
+          content: error instanceof Error && error.message === "NO_MATCH"
+            ? "We don't have a listed specialist for this yet. We'll consult our partner network and be in touch."
+            : "I couldn't find a consultant right now. Please share more detail about your request.",
+        });
       } finally {
         setIsLoading(false);
       }
@@ -438,9 +478,30 @@ export function ChatWidget() {
     setIsLoading(true);
     try {
       const reply = await callSaarthi(value);
-      addMessage({ id: nextId("bot"), type: "bot", content: reply });
+      addMessage({
+        id: nextId("bot"),
+        type: "bot",
+        content: reply.text,
+        // Render buttons from agent; always include Talk to consultant if escalate=true
+        options: (() => {
+          const btns = reply.buttons ? [...reply.buttons] : [];
+          if (reply.escalate && !btns.some((b) => b.toLowerCase().includes("consultant"))) {
+            btns.push("Talk to a consultant");
+          }
+          return btns.length > 0 ? buttonsToOptions(btns) : undefined;
+        })(),
+      });
     } catch {
-      addMessage({ id: nextId("bot"), type: "bot", content: "Sorry, I'm having trouble right now. Would you like to schedule a call instead?", options: [{ label: "Today", value: "schedule:Today" }, { label: "Tomorrow", value: "schedule:Tomorrow" }, { label: "This week", value: "schedule:This week" }, { label: "Talk to consultant", value: "talk to consultant" }] });
+      addMessage({
+        id: nextId("bot"), type: "bot",
+        content: "Sorry, I'm having trouble right now. Would you like to schedule a call instead?",
+        options: [
+          { label: "Today", value: "schedule:Today" },
+          { label: "Tomorrow", value: "schedule:Tomorrow" },
+          { label: "This week", value: "schedule:This week" },
+          { label: "Talk to consultant", value: "talk to consultant" },
+        ],
+      });
     } finally {
       setIsLoading(false);
     }
@@ -492,7 +553,12 @@ export function ChatWidget() {
                   {message.type === "bot" && message.options && message.options.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-2">
                       {message.options.map((option) => (
-                        <button key={option.label} type="button" className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600 transition hover:border-primary-300 hover:text-primary-600" onClick={() => handleOptionClick(option)}>
+                        <button
+                          key={option.label}
+                          type="button"
+                          className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600 transition hover:border-primary-300 hover:text-primary-600"
+                          onClick={() => handleOptionClick(option)}
+                        >
                           {option.label}
                         </button>
                       ))}
