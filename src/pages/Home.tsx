@@ -3,11 +3,14 @@ import { ServicesSection } from "../sections/ServicesSection";
 import { ProcessSection } from "../sections/ProcessSection";
 import { CaseStudiesSection } from "../sections/CaseStudiesSection";
 import { AnalyticsSection } from "../sections/AnalyticsSection";
+import { ReachUsDirectlySection, StartConversationSection } from "../components/ContactHighlights";
 
 export function Home() {
   return (
     <main>
       <HeroSection />
+      <StartConversationSection />
+      <ReachUsDirectlySection />
       <ServicesSection />
       <section className="cta-diceus py-16">
         <div className="container-page grid gap-8 lg:grid-cols-[1.2fr,0.8fr]">

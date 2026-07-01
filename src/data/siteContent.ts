@@ -11,7 +11,7 @@ export const siteContent = {
     subtext:
       "With a pool of experienced talented and energetic team of experts from various fields of management.",
     ctas: [
-      { label: "Start Your Journey", href: "/contact" },
+      { label: "Get Started", href: "/contact" },
       { label: "View Our Services", href: "/services" },
     ],
     trust: [

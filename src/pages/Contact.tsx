@@ -1,4 +1,5 @@
 import { ConsultForm } from "../components/ConsultForm";
+import { ReachUsDirectlySection } from "../components/ContactHighlights";
 
 export function Contact() {
   return (
@@ -9,6 +10,7 @@ export function Contact() {
           <p className="mt-3 text-slate-300">Let’s connect. Share a few details and our team will reach out.</p>
         </div>
       </section>
+      <ReachUsDirectlySection />
       <section className="py-16">
         <div className="container-page max-w-3xl">
           <ConsultForm submitLabel="Book a 30‑min call" />
