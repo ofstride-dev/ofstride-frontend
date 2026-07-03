@@ -1,7 +1,9 @@
+import { Seo } from "../components/Seo";
 export function Founder() {
   return (
     <main>
-      <section className="bg-slate-950 py-16 text-white">
+      <Seo title="Our Founder" description="Meet the founder of Ofstride Services LLP." />
+      <section className="bg-ink-900 py-16 text-white">
         <div className="container-page">
           <h1 className="text-3xl font-bold gradient-text">Our Founder</h1>
           <p className="mt-3 text-slate-300">Meet the founder of Ofstride Services LLP and the leadership behind our consulting practice.</p>

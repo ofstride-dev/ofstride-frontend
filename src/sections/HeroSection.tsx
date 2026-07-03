@@ -2,7 +2,7 @@ import { siteContent } from "../data/siteContent";
 
 export function HeroSection() {
   return (
-    <section className="relative min-h-[90vh] overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+    <section className="relative min-h-[90vh] overflow-hidden bg-gradient-to-br from-ink-900 via-slate-900 to-ink-900 text-white">
       <div className="absolute inset-0 opacity-10" style={{
         backgroundImage: "radial-gradient(circle at 2px 2px, white 1px, transparent 0)",
         backgroundSize: "40px 40px",

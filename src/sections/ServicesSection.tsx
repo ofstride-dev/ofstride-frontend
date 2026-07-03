@@ -34,10 +34,10 @@ const serviceIcons: Record<string, React.JSX.Element> = {
 };
 
 const serviceBadgeClasses: Record<string, string> = {
-  hr: "from-emerald-500 to-teal-500",
-  finance: "from-amber-500 to-orange-500",
-  legal: "from-indigo-500 to-violet-500",
-  it: "from-sky-500 to-blue-500",
+  hr: "from-primary-400 to-primary-600",
+  finance: "from-accent-400 to-accent-600",
+  legal: "from-ink-600 to-ink-900",
+  it: "from-primary-400 to-primary-600",
 };
 
 export function ServicesSection() {
@@ -52,7 +52,7 @@ export function ServicesSection() {
           {siteContent.services.map((service) => (
             <div key={service.key} className="card border-slate-200/80 bg-white/90 backdrop-blur hover:-translate-y-1 transition">
               <div
-                className={`icon-badge bg-gradient-to-br ${serviceBadgeClasses[service.key] ?? "from-primary-500 to-primary-600"} shadow-strong`}
+                className={`icon-badge bg-gradient-to-br ${serviceBadgeClasses[service.key] ?? "from-accent-400 to-accent-600"} shadow-strong`}
               >
                 {serviceIcons[service.key] ?? service.shortLabel}
               </div>

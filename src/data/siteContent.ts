@@ -3,22 +3,24 @@ export const siteContent = {
     name: "Ofstride Services LLP",
     logo: "/assets/logo/logo.png",
     phone: "89516 06862",
+    phoneIntl: "+918951606862",
+    whatsapp: "+918951606862",
     email: "info@ofstride.com",
   },
   hero: {
-    badge: "Premium Consulting for MSMEs",
-    headline: "Helping you take bigger strides towards success.",
+    badge: "AI-led consulting for HR, Finance, Legal & IT",
+    headline: "We implement AI. Not just advise on it.",
     subtext:
-      "With a pool of experienced talented and energetic team of experts from various fields of management.",
+      "A boutique consulting firm helping growing businesses put AI to work across HR, Finance, Legal, and IT — with hands-on implementation, not just a strategy deck.",
     ctas: [
-      { label: "Start Your Journey", href: "/contact" },
-      { label: "View Our Services", href: "/services" },
+      { label: "Book a consult", href: "/contact" },
+      { label: "See our services", href: "/services" },
     ],
     trust: [
-      "Industry Expertise",
-      "Client-Centric Approach",
-      "Adaptability",
-      "Long-term Partnerships",
+      "4 practice areas under one roof",
+      "Hands-on implementation, not just advisory",
+      "Direct access to the consulting team",
+      "Built for growing businesses",
     ],
   },
   services: [
@@ -94,19 +96,19 @@ export const siteContent = {
   ],
   caseStudies: [
     {
-      title: "MSME Retail – Demand Forecasting",
-      summary: "Reduced stockouts by 38% and improved cashflow with AI-driven forecasting.",
-      metric: "ROI: 4.2x in 9 months",
+      title: "Retail — Demand Forecasting",
+      summary: "AI-driven forecasting engagement model built to reduce stockouts and improve cashflow.",
+      metric: "Target: 4x ROI within 9 months",
     },
     {
-      title: "FinTech – Fraud Detection",
-      summary: "Automated anomaly detection cut fraud losses by 46% in 12 weeks.",
-      metric: "ROI: 3.6x in 6 months",
+      title: "FinTech — Fraud Detection",
+      summary: "Anomaly-detection engagement model built to cut fraud losses within weeks, not quarters.",
+      metric: "Target: 3.5x ROI within 6 months",
     },
     {
-      title: "Services – AI Support Copilot",
-      summary: "Resolved tickets 41% faster while improving CSAT by 22%.",
-      metric: "ROI: 2.9x in 5 months",
+      title: "Services — AI Support Copilot",
+      summary: "Support-copilot engagement model built to speed up resolution while lifting CSAT.",
+      metric: "Target: 3x ROI within 5 months",
     },
   ],
 };

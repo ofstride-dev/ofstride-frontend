@@ -3,10 +3,12 @@ import { ServicesSection } from "../sections/ServicesSection";
 import { ProcessSection } from "../sections/ProcessSection";
 import { CaseStudiesSection } from "../sections/CaseStudiesSection";
 import { AnalyticsSection } from "../sections/AnalyticsSection";
+import { Seo } from "../components/Seo";
 
 export function Home() {
   return (
     <main>
+      <Seo title="Home" description="AI-led consulting for HR, Finance, Legal, and IT. We implement AI, not just advise on it." />
       <HeroSection />
       <ServicesSection />
       <section className="cta-diceus py-16">

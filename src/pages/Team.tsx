@@ -1,7 +1,9 @@
+import { Seo } from "../components/Seo";
 export function Team() {
   return (
     <main>
-      <section className="bg-slate-950 py-16 text-white">
+      <Seo title="Our Team" description="Meet the consulting team at Ofstride Services LLP." />
+      <section className="bg-ink-900 py-16 text-white">
         <div className="container-page">
           <h1 className="text-3xl font-bold gradient-text">Our Consulting Team</h1>
           <p className="mt-3 text-slate-300">

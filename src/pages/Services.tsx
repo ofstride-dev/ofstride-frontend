@@ -1,11 +1,13 @@
 import { ConsultForm } from "../components/ConsultForm";
 import heroImage from "../assets/img/hero/hero-01.png";
 import { ServicesSection } from "../sections/ServicesSection";
+import { Seo } from "../components/Seo";
 
 export function Services() {
   return (
     <main>
-      <section className="bg-slate-950 py-16 text-white">
+      <Seo title="Our Services" description="Explore Ofstride's consulting services across HR, Finance, Legal, and IT & AI." />
+      <section className="bg-ink-900 py-16 text-white">
         <div className="container-page">
           <div className="grid items-center gap-10 lg:grid-cols-[1.1fr,0.9fr]">
             <div>

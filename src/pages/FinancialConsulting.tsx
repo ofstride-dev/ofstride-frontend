@@ -1,12 +1,13 @@
 import { ConsultForm } from "../components/ConsultForm";
 import heroImage from "../assets/img/hero/hero-05.png";
+import { Seo } from "../components/Seo";
 
 export function FinancialConsulting() {
   const coreServices = [
     {
       title: "Financial Planning and Analysis",
       description: "Comprehensive financial plans aligned with business goals using data‑driven analysis and forecasting.",
-      badgeClass: "from-emerald-500 to-teal-500",
+      badgeClass: "from-primary-400 to-primary-600",
       icon: (
         <svg viewBox="0 0 24 24" className="h-6 w-6 text-white" fill="none" stroke="currentColor" strokeWidth="1.6">
           <path d="M4 19h16" />
@@ -19,7 +20,7 @@ export function FinancialConsulting() {
     {
       title: "Budgeting and Forecasting",
       description: "Realistic budgets and forecasts that support resource allocation and growth planning.",
-      badgeClass: "from-blue-500 to-indigo-500",
+      badgeClass: "from-accent-400 to-accent-600",
       icon: (
         <svg viewBox="0 0 24 24" className="h-6 w-6 text-white" fill="none" stroke="currentColor" strokeWidth="1.6">
           <path d="M6 4h12" />
@@ -32,7 +33,7 @@ export function FinancialConsulting() {
     {
       title: "Business Structure and Governance",
       description: "Strategic advice to optimize structure, improve efficiency, and enhance compliance.",
-      badgeClass: "from-violet-500 to-purple-500",
+      badgeClass: "from-ink-600 to-ink-900",
       icon: (
         <svg viewBox="0 0 24 24" className="h-6 w-6 text-white" fill="none" stroke="currentColor" strokeWidth="1.6">
           <path d="M4 7h16" />
@@ -44,7 +45,7 @@ export function FinancialConsulting() {
     {
       title: "Tax Planning and Compliance",
       description: "Optimize tax liabilities and ensure compliance with changing regulations.",
-      badgeClass: "from-amber-500 to-orange-500",
+      badgeClass: "from-primary-400 to-primary-600",
       icon: (
         <svg viewBox="0 0 24 24" className="h-6 w-6 text-white" fill="none" stroke="currentColor" strokeWidth="1.6">
           <path d="M7 7h10" />
@@ -57,7 +58,7 @@ export function FinancialConsulting() {
     {
       title: "Financial Risk Assessment",
       description: "Proactive risk reviews to reduce exposure and strengthen financial stability.",
-      badgeClass: "from-rose-500 to-pink-500",
+      badgeClass: "from-accent-400 to-accent-600",
       icon: (
         <svg viewBox="0 0 24 24" className="h-6 w-6 text-white" fill="none" stroke="currentColor" strokeWidth="1.6">
           <path d="M12 3 4 6v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V6l-8-3Z" />
@@ -69,7 +70,7 @@ export function FinancialConsulting() {
     {
       title: "Taxation — Direct & Indirect",
       description: "Guidance for income tax planning and GST compliance to stay tax‑efficient.",
-      badgeClass: "from-cyan-500 to-sky-500",
+      badgeClass: "from-ink-600 to-ink-900",
       icon: (
         <svg viewBox="0 0 24 24" className="h-6 w-6 text-white" fill="none" stroke="currentColor" strokeWidth="1.6">
           <path d="M4 7h16" />
@@ -82,7 +83,7 @@ export function FinancialConsulting() {
     {
       title: "Audits — GST Audit, Cost Audit",
       description: "Audit support to keep records accurate, transparent, and regulator‑ready.",
-      badgeClass: "from-indigo-500 to-blue-500",
+      badgeClass: "from-primary-400 to-primary-600",
       icon: (
         <svg viewBox="0 0 24 24" className="h-6 w-6 text-white" fill="none" stroke="currentColor" strokeWidth="1.6">
           <path d="M6 4h9l3 3v13H6z" />
@@ -94,7 +95,7 @@ export function FinancialConsulting() {
     {
       title: "Project Financing and Business Loans",
       description: "Support for securing financing by connecting with suitable lenders and guiding applications.",
-      badgeClass: "from-emerald-500 to-green-500",
+      badgeClass: "from-accent-400 to-accent-600",
       icon: (
         <svg viewBox="0 0 24 24" className="h-6 w-6 text-white" fill="none" stroke="currentColor" strokeWidth="1.6">
           <path d="M3 11h18" />
@@ -108,7 +109,7 @@ export function FinancialConsulting() {
     {
       title: "Virtual CFO Services",
       description: "Strategic financial leadership without a full‑time CFO overhead.",
-      badgeClass: "from-fuchsia-500 to-pink-500",
+      badgeClass: "from-ink-600 to-ink-900",
       icon: (
         <svg viewBox="0 0 24 24" className="h-6 w-6 text-white" fill="none" stroke="currentColor" strokeWidth="1.6">
           <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z" />
@@ -120,7 +121,7 @@ export function FinancialConsulting() {
     {
       title: "Tax Audit",
       description: "Detailed reviews to ensure tax compliance and accurate reporting.",
-      badgeClass: "from-slate-500 to-slate-700",
+      badgeClass: "from-primary-400 to-primary-600",
       icon: (
         <svg viewBox="0 0 24 24" className="h-6 w-6 text-white" fill="none" stroke="currentColor" strokeWidth="1.6">
           <path d="M10 14h4" />
@@ -140,7 +141,8 @@ export function FinancialConsulting() {
 
   return (
     <main>
-      <section className="bg-slate-950 py-16 text-white">
+      <Seo title="Financial Consulting" description="Financial planning, budgeting, and virtual CFO services for growing businesses." />
+      <section className="bg-ink-900 py-16 text-white">
         <div className="container-page">
           <div className="grid items-center gap-10 lg:grid-cols-[1.1fr,0.9fr]">
             <div>

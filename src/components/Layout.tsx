@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { ChatWidget } from "./ChatWidget";
+import { ContactDock } from "./ContactDock";
 
 export function Layout({ children }: { children: ReactNode }) {
   return (
@@ -9,6 +10,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <Header />
       {children}
       <Footer />
+      <ContactDock />
       <ChatWidget />
     </div>
   );

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ConsultForm } from "../components/ConsultForm";
 import { DATA_ENDPOINTS, logApiCall } from "../config/api";
 import heroImage from "../assets/img/hero/hero-02.png";
+import { Seo } from "../components/Seo";
 
 export function HRConsulting() {
   const [hiringStatus, setHiringStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -30,7 +31,7 @@ export function HRConsulting() {
       title: "Talent Acquisition and Recruitment",
       description:
         "Identify and recruit individuals who align with your company culture and objectives using proven sourcing and selection practices.",
-      badgeClass: "from-emerald-500 to-teal-500",
+      badgeClass: "from-primary-400 to-primary-600",
       icon: (
         <svg viewBox="0 0 24 24" className="h-6 w-6 text-white" fill="none" stroke="currentColor" strokeWidth="1.6">
           <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z" />
@@ -42,7 +43,7 @@ export function HRConsulting() {
       title: "Employee Development and Training",
       description:
         "Customized training programs across leadership and technical skills to help teams grow and perform at their best.",
-      badgeClass: "from-blue-500 to-indigo-500",
+      badgeClass: "from-accent-400 to-accent-600",
       icon: (
         <svg viewBox="0 0 24 24" className="h-6 w-6 text-white" fill="none" stroke="currentColor" strokeWidth="1.6">
           <path d="M4 6h16" />
@@ -56,7 +57,7 @@ export function HRConsulting() {
       title: "Compensation and Benefits Design",
       description:
         "Design strategic reward systems that are competitive, fair, and aligned to performance and retention goals.",
-      badgeClass: "from-amber-500 to-orange-500",
+      badgeClass: "from-ink-600 to-ink-900",
       icon: (
         <svg viewBox="0 0 24 24" className="h-6 w-6 text-white" fill="none" stroke="currentColor" strokeWidth="1.6">
           <path d="M4 19h16" />
@@ -70,7 +71,7 @@ export function HRConsulting() {
       title: "HR Policy Development",
       description:
         "Create policies that promote a positive work environment, consistency, and compliance across HR operations.",
-      badgeClass: "from-violet-500 to-purple-500",
+      badgeClass: "from-primary-400 to-primary-600",
       icon: (
         <svg viewBox="0 0 24 24" className="h-6 w-6 text-white" fill="none" stroke="currentColor" strokeWidth="1.6">
           <path d="M6 4h9l3 3v13H6z" />
@@ -83,7 +84,7 @@ export function HRConsulting() {
       title: "HR Compliance and Legal Support",
       description:
         "Stay compliant with evolving regulations through proactive guidance and risk mitigation support.",
-      badgeClass: "from-rose-500 to-pink-500",
+      badgeClass: "from-accent-400 to-accent-600",
       icon: (
         <svg viewBox="0 0 24 24" className="h-6 w-6 text-white" fill="none" stroke="currentColor" strokeWidth="1.6">
           <path d="M12 3 4 6v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V6l-8-3Z" />
@@ -95,7 +96,7 @@ export function HRConsulting() {
       title: "Industrial Training and Placement",
       description:
         "Bridge academia and industry through training and placement programs that align talent with real‑world roles.",
-      badgeClass: "from-cyan-500 to-sky-500",
+      badgeClass: "from-ink-600 to-ink-900",
       icon: (
         <svg viewBox="0 0 24 24" className="h-6 w-6 text-white" fill="none" stroke="currentColor" strokeWidth="1.6">
           <path d="M4 10l8-4 8 4-8 4-8-4Z" />
@@ -169,7 +170,8 @@ export function HRConsulting() {
 
   return (
     <main>
-      <section className="bg-slate-950 py-16 text-white">
+      <Seo title="HR Consulting" description="HR consulting and workforce solutions — talent, hiring, operations, and compliance for growing businesses." />
+      <section className="bg-ink-900 py-16 text-white">
         <div className="container-page">
           <div className="grid items-center gap-10 lg:grid-cols-[1.1fr,0.9fr]">
             <div>
