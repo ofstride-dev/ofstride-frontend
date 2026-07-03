@@ -2,12 +2,12 @@ import { siteContent } from "../data/siteContent";
 
 export function Footer() {
   return (
-    <footer className="bg-slate-950 text-slate-200">
+    <footer className="bg-ink-900 text-slate-200">
       <div className="container-page grid gap-8 py-12 md:grid-cols-4">
         <div>
           <img src={siteContent.brand.logo} alt={siteContent.brand.name} className="h-10" />
           <p className="mt-4 text-sm text-slate-300">
-            Ofstride Services LLP, founded in 2019, is a creative and forward-thinking consulting firm.
+            Ofstride Services LLP is an AI-led consulting firm helping businesses scale across HR, Finance, Legal, and IT.
           </p>
         </div>
         <div>
@@ -16,7 +16,6 @@ export function Footer() {
             <li><a className="hover:text-white" href="/about">About Us</a></li>
             <li><a className="hover:text-white" href="/founder">Our Founder</a></li>
             <li><a className="hover:text-white" href="/team">Our Key Consulting Team</a></li>
-            <li><a className="hover:text-white" href="/insights">Insights</a></li>
             <li><a className="hover:text-white" href="/contact">Contact Us</a></li>
           </ul>
         </div>

@@ -5,8 +5,8 @@ export function CaseStudiesSection() {
     <section className="bg-slate-50 py-20">
       <div className="container-page">
         <div className="section-title">
-          <h2>AI Case Studies & Impact Metrics</h2>
-          <p className="text-slate-600">Representative outcomes aligned to our IT modernization work.</p>
+          <h2>How we structure an engagement</h2>
+          <p className="text-slate-600">Illustrative models showing how we scope, deliver, and target outcomes.</p>
         </div>
         <div className="grid gap-6 md:grid-cols-3">
           {siteContent.caseStudies.map((study) => (

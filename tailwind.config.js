@@ -5,12 +5,26 @@ export default {
     extend: {
       colors: {
         primary: {
-          100: "#dbe5ff",
-          400: "#3b5bdb",
-          500: "#00239C",
-          600: "#001C7D",
+          50: "#F3F2FE",
+          100: "#EEEDFE",
+          200: "#CECBF6",
+          300: "#AFA9EC",
+          400: "#8F87E3",
+          500: "#6864ED",
+          600: "#534AB7",
+          700: "#3C3489",
         },
-        accent: "#2dd4bf",
+        ink: {
+          400: "#5F5E5A",
+          500: "#3D3D3A",
+          600: "#26251F",
+          900: "#151718",
+        },
+        accent: {
+          400: "#5DCAA5",
+          500: "#33CC79",
+          600: "#1D9E75",
+        },
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],

@@ -218,7 +218,7 @@ export function ApplyForJobs() {
   return (
     <main>
       {/* Hero */}
-      <section className="bg-slate-950 py-16 text-white">
+      <section className="bg-ink-900 py-16 text-white">
         <div className="container-page">
           <div className="grid items-center gap-10 lg:grid-cols-[1.1fr,0.9fr]">
             <div>
