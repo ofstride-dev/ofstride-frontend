@@ -1,5 +1,5 @@
 import { ConsultForm } from "../components/ConsultForm";
-import heroImage from "../assets/img/hero/hero-05.png";
+import { SectionHero } from "../components/SectionHero";
 
 export function FinancialConsulting() {
   const coreServices = [
@@ -140,30 +140,18 @@ export function FinancialConsulting() {
 
   return (
     <main>
-      <section className="bg-slate-950 py-16 text-white">
-        <div className="container-page">
-          <div className="grid items-center gap-10 lg:grid-cols-[1.1fr,0.9fr]">
-            <div>
-              <h1 className="text-3xl font-bold gradient-text">Financial Consulting</h1>
-              <p className="mt-3 text-slate-300">
-                Data-driven planning that turns financial goals into growth.
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <a className="btn btn-primary" href="#consult-form">Request a consult</a>
-                <a className="btn btn-outline" href="/contact">Contact us</a>
-              </div>
-            </div>
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
-              <img
-                src={heroImage}
-                alt="Financial consulting"
-                className="h-auto w-full rounded-2xl"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-      <section className="bg-slate-50 py-16">
+      <SectionHero
+        eyebrow="Financial Consulting"
+        title="Financial clarity and planning that supports growth and action"
+        description="We bring finance, forecasting, and governance together so your business can make decisions with confidence and move faster."
+        highlight="Built for leaders who need clear next steps, not more analysis."
+        size="sm"
+        actions={[
+          { label: "Request a consult", href: "#consult-form" },
+          { label: "Contact us", href: "/contact", variant: "outline" },
+        ]}
+      />
+      <section className="bg-slate-50 py-10">
         <div className="container-page">
           <div className="section-title section-title-left">
             <h2>Core financial services</h2>

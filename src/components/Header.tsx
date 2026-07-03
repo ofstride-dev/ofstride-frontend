@@ -1,35 +1,31 @@
 import { useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { siteContent } from "../data/siteContent";
-import hrImage from "../assets/img/service/service-01.png";
-import financeImage from "../assets/img/service/service-02.png";
-import legalImage from "../assets/img/service/service-03.png";
-import itImage from "../assets/img/service/service-04.png";
 
 const serviceMenu = [
   {
     title: "HR Consulting",
     href: "/hr-consulting",
     description: "Hiring, people ops, and workforce enablement.",
-    image: hrImage,
+    icon: <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-blue-500 text-sm font-semibold text-white">HR</span>,
   },
   {
     title: "Financial Consulting",
     href: "/financial-consulting",
     description: "Planning, compliance, and financial clarity.",
-    image: financeImage,
+    icon: <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-blue-500 text-sm font-semibold text-white">FIN</span>,
   },
   {
     title: "Legal Consulting",
     href: "/legal-consulting",
     description: "Contracts, compliance, and risk guidance.",
-    image: legalImage,
+    icon: <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-blue-500 text-sm font-semibold text-white">LAW</span>,
   },
   {
     title: "IT Consulting",
     href: "/it-consulting",
     description: "AI, cloud modernization, and security.",
-    image: itImage,
+    icon: <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-blue-500 text-sm font-semibold text-white">IT</span>,
   },
 ];
 
@@ -38,19 +34,19 @@ const inquireMenu = [
     title: "Consulting inquiry",
     href: "/contact",
     description: "General consultation or advisory request.",
-    image: itImage,
+    icon: <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-blue-500 text-sm font-semibold text-white">AI</span>,
   },
   {
     title: "Hire through Ofstride",
     href: "/hire-through-ofstride",
     description: "Submit role requirements for hiring support.",
-    image: hrImage,
+    icon: <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-blue-500 text-sm font-semibold text-white">HR</span>,
   },
   {
     title: "Apply for jobs",
     href: "/apply-for-jobs",
     description: "Upload your profile for open roles.",
-    image: legalImage,
+    icon: <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-blue-500 text-sm font-semibold text-white">CV</span>,
   },
 ];
 
@@ -129,7 +125,7 @@ export function Header() {
                     className="flex items-center gap-4 rounded-2xl border border-slate-100 p-3 transition hover:border-primary-200 hover:bg-slate-50"
                     onClick={closeMenu}
                   >
-                    <img src={service.image} alt={service.title} className="h-14 w-14 rounded-xl object-cover" />
+                    {service.icon}
                     <div>
                       <p className="text-sm font-semibold text-slate-900">{service.title}</p>
                       <p className="text-xs text-slate-500">{service.description}</p>
@@ -173,7 +169,7 @@ export function Header() {
                     to={item.href}
                     onClick={closeMenu}
                   >
-                    <img src={item.image} alt={item.title} className="h-12 w-12 rounded-xl object-cover" />
+                    {item.icon}
                     <div>
                       <p className="text-sm font-semibold text-slate-900">{item.title}</p>
                       <p className="text-xs text-slate-500">{item.description}</p>
@@ -190,6 +186,9 @@ export function Header() {
             }
           >
             Contact
+          </NavLink>
+          <NavLink to="/contact" className="btn btn-primary hidden md:inline-flex">
+            Talk to Us
           </NavLink>
         </nav>
       </div>

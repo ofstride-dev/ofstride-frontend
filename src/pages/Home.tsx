@@ -9,6 +9,34 @@ export function Home() {
   return (
     <main>
       <HeroSection />
+      <section className="bg-blue-50 py-16">
+        <div className="container-page">
+          <div className="section-title">
+            <h2>Start with the outcome you need</h2>
+            <p className="text-slate-600">Access consulting, AI advisory, and agentic business support from any page.</p>
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            <div className="card border border-slate-200 bg-white p-8 shadow-soft">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-600">Consulting</p>
+              <h3 className="mt-4 text-xl font-semibold text-slate-900">Explore service tracks</h3>
+              <p className="mt-3 text-sm text-slate-600">Find the right blend of HR, finance, legal, and IT advisory for your growth stage.</p>
+              <a href="/services" className="mt-6 inline-flex rounded-full bg-primary-600 px-5 py-3 text-sm font-semibold text-white shadow-strong hover:bg-primary-700">View services</a>
+            </div>
+            <div className="card border border-slate-200 bg-white p-8 shadow-soft">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-600">Discovery</p>
+              <h3 className="mt-4 text-xl font-semibold text-slate-900">Book a strategy call</h3>
+              <p className="mt-3 text-sm text-slate-600">Jump straight to a tailored discussion around AI and agentic solutions for your business.</p>
+              <a href="/contact" className="mt-6 inline-flex rounded-full bg-primary-600 px-5 py-3 text-sm font-semibold text-white shadow-strong hover:bg-primary-700">Talk to us</a>
+            </div>
+            <div className="card border border-slate-200 bg-white p-8 shadow-soft">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-600">AI Enablement</p>
+              <h3 className="mt-4 text-xl font-semibold text-slate-900">Launch agentic workflows</h3>
+              <p className="mt-3 text-sm text-slate-600">Get hands-on guidance for AI use cases that span HR, finance, legal, and IT operations.</p>
+              <a href="/it-consulting" className="mt-6 inline-flex rounded-full bg-primary-600 px-5 py-3 text-sm font-semibold text-white shadow-strong hover:bg-primary-700">Explore AI</a>
+            </div>
+          </div>
+        </div>
+      </section>
       <StartConversationSection />
       <ReachUsDirectlySection />
       <ServicesSection />

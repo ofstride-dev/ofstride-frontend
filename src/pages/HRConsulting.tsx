@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ConsultForm } from "../components/ConsultForm";
 import { DATA_ENDPOINTS, logApiCall } from "../config/api";
-import heroImage from "../assets/img/hero/hero-02.png";
+import { SectionHero } from "../components/SectionHero";
 
 export function HRConsulting() {
   const [hiringStatus, setHiringStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -169,30 +169,18 @@ export function HRConsulting() {
 
   return (
     <main>
-      <section className="bg-slate-950 py-16 text-white">
-        <div className="container-page">
-          <div className="grid items-center gap-10 lg:grid-cols-[1.1fr,0.9fr]">
-            <div>
-              <h1 className="text-3xl font-bold gradient-text">HR Consulting</h1>
-              <p className="mt-3 text-slate-300">
-                People-first strategies that strengthen culture and performance.
-              </p>
-              <div className="mt-5 flex flex-wrap gap-3">
-                <a className="btn btn-primary" href="#consult-form">Request a consultant</a>
-                <a className="btn btn-outline" href="/hire-through-ofstride">Hire through Ofstride</a>
-                <a className="btn btn-outline" href="/apply-for-jobs">Apply for jobs</a>
-              </div>
-            </div>
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
-              <img
-                src={heroImage}
-                alt="HR consulting"
-                className="h-auto w-full rounded-2xl"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
+      <SectionHero
+        eyebrow="HR Consulting"
+        title="People, process, and AI working together for better HR outcomes"
+        description="We help teams improve recruitment, retention, and performance with practical HR design paired with smart automation and advisory support."
+        highlight="Expert-led HR guidance for emerging businesses and growth-ready teams."
+        size="sm"
+        actions={[
+          { label: "Request a consult", href: "#consult-form" },
+          { label: "Hire through Ofstride", href: "/hire-through-ofstride", variant: "outline" },
+          { label: "Apply for jobs", href: "/apply-for-jobs", variant: "outline" },
+        ]}
+      />
       <section className="py-10">
         <div className="container-page grid gap-4 md:grid-cols-3">
           <a className="card card-hover" href="#consult-form">

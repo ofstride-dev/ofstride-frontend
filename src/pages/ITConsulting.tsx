@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ConsultForm } from "../components/ConsultForm";
-import heroImage from "../assets/img/hero/hero-07.png";
+import { SectionHero } from "../components/SectionHero";
 
 export function ITConsulting() {
   const [openGroup, setOpenGroup] = useState("IT services");
@@ -130,28 +130,19 @@ export function ITConsulting() {
 
   return (
     <main>
-      <section className="bg-slate-950 py-16 text-white">
-        <div className="container-page">
-          <div className="text-xs uppercase tracking-[0.3em] text-slate-400">
-            Services · AI and Technology
-          </div>
-          <div className="mt-5">
-            <div>
-              <h1 className="text-3xl font-bold gradient-text">AI and Technology</h1>
-              <p className="mt-3 text-slate-300">
-                Explore AI’s impact on industries, trends, and challenges. Get insights on data science, generative AI,
-                and ethical considerations to stay ahead with Offstride’s expertise.
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <a className="btn btn-primary" href="#consult-form">Get in touch</a>
-                <a className="btn btn-outline" href="/contact">Contact us</a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <SectionHero
+        eyebrow="Services · AI and Technology"
+        title="Technology and AI guidance for practical business change"
+        description="We help leaders prioritize AI use cases, modernize data foundations, and build technology roadmaps that support measurable growth."
+        highlight="Not every AI idea needs to be complex — start with the right business problem."
+        size="sm"
+        actions={[
+          { label: "Get in touch", href: "#consult-form" },
+          { label: "Contact us", href: "/contact", variant: "outline" },
+        ]}
+      />
 
-      <section className="py-16">
+      <section className="py-10">
         <div className="container-page grid gap-10 lg:grid-cols-[260px,1fr]">
           <aside>
             <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-soft">
@@ -188,21 +179,20 @@ export function ITConsulting() {
 
           <div className="space-y-12">
             <section className="grid gap-6 lg:grid-cols-[0.9fr,1.1fr]">
-              <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-soft">
-                <img src={heroImage} alt="IT advisory" className="h-auto w-full rounded-2xl" />
-              </div>
+              <div className="rounded-3xl border border-slate-200 bg-sky-50 p-8 shadow-soft">
               <div className="space-y-4">
                 <h2 className="text-2xl font-semibold text-slate-900">What we offer</h2>
-                <p className="text-slate-600">
+                <p className="text-slate-700">
                   Offstride delivers practical AI and technology guidance for growing organizations. We help you
                   prioritize high‑value AI use cases, modernize data foundations, and adopt cloud architectures that
                   support secure, scalable innovation.
                 </p>
-                <p className="text-slate-600">
+                <p className="text-slate-700">
                   Our advisory focuses on data science, generative AI, responsible AI, and modernization so you can
                   move from experimentation to production with confidence.
                 </p>
               </div>
+            </div>
             </section>
 
             <section className="grid gap-6 md:grid-cols-2">

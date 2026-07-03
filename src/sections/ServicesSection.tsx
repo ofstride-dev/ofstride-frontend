@@ -42,11 +42,11 @@ const serviceBadgeClasses: Record<string, string> = {
 
 export function ServicesSection() {
   return (
-    <section className="section-gradient py-20">
+    <section className="section-gradient py-14">
       <div className="container-page">
         <div className="section-title">
-          <h2>Our expertise by discipline</h2>
-          <p className="text-slate-600">Service categories aligned to the specialized teams we deliver.</p>
+          <h2>AI-enabled service tracks</h2>
+          <p className="text-slate-600">Choose the business domain and let our AI-first approach unlock HR, finance, legal, and IT value.</p>
         </div>
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
           {siteContent.services.map((service) => (

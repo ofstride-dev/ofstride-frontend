@@ -3,22 +3,22 @@ export const siteContent = {
     name: "Ofstride Services LLP",
     logo: "/assets/logo/logo.png",
     phone: "89516 06862",
-    email: "info@ofstride.com",
+    email: "support@ofstrideservices.com",
   },
   hero: {
-    badge: "Premium Consulting for MSMEs",
-    headline: "Helping you take bigger strides towards success.",
+    badge: "Strategy, insight, and faster business decisions",
+    headline: "Get the right next move for your business with practical advisory and intelligent workflows.",
     subtext:
-      "With a pool of experienced talented and energetic team of experts from various fields of management.",
+      "We help teams use domain expertise, process clarity, and smart tools to improve HR, finance, legal, and IT outcomes.",
     ctas: [
       { label: "Get Started", href: "/contact" },
       { label: "View Our Services", href: "/services" },
     ],
     trust: [
-      "Industry Expertise",
-      "Client-Centric Approach",
-      "Adaptability",
-      "Long-term Partnerships",
+      "Practical business outcomes",
+      "Domain-aware guidance",
+      "Scalable advisory for growing teams",
+      "Clear next-step recommendations",
     ],
   },
   services: [
@@ -26,7 +26,7 @@ export const siteContent = {
       key: "hr",
       shortLabel: "HR",
       title: "HR Consulting",
-      description: "Expert guidance optimizing workforce efficiency.",
+      description: "AI-powered workforce strategy and people operations.",
       items: [
         "Talent acquisition & recruitment",
         "Employee development & training",
@@ -38,7 +38,7 @@ export const siteContent = {
       key: "finance",
       shortLabel: "FIN",
       title: "Financial Consulting",
-      description: "Comprehensive financial guidance for success.",
+      description: "Data-driven finance and forecasting for growth.",
       items: [
         "Financial planning & analysis",
         "Budgeting & forecasting",
@@ -51,7 +51,7 @@ export const siteContent = {
       key: "legal",
       shortLabel: "LAW",
       title: "Legal Consulting",
-      description: "Professional legal advice and assistance.",
+      description: "Practical compliance and contracts guided by business context.",
       items: [
         "Contract review & drafting",
         "Intellectual property rights",

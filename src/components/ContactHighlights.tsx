@@ -10,19 +10,19 @@ function normalizePhone(phone: string) {
 function actionCard({ title, subtitle, href, children }: { title: string; subtitle: string; href: string; children: ReactNode; }) {
   return (
     <a
-      className="group block rounded-3xl border border-white/10 bg-white/5 p-6 transition hover:-translate-y-1 hover:border-white/20"
+      className="group block rounded-3xl border border-sky-100 bg-sky-50 p-6 transition hover:-translate-y-1 hover:border-primary-300"
       href={href}
       target={href.startsWith("mailto:") || href.startsWith("tel:") ? undefined : "_blank"}
       rel={href.startsWith("mailto:") || href.startsWith("tel:") ? undefined : "noopener noreferrer"}
     >
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-sm uppercase tracking-[0.24em] text-primary-200">{title}</p>
-          <p className="mt-3 text-lg font-semibold text-white">{subtitle}</p>
+          <p className="text-sm uppercase tracking-[0.24em] text-primary-600">{title}</p>
+          <p className="mt-3 text-lg font-semibold text-slate-900">{subtitle}</p>
         </div>
-        <div className="rounded-2xl bg-slate-900 px-3 py-2 text-xs text-slate-200">Go</div>
+        <div className="rounded-2xl bg-primary-600 px-3 py-2 text-xs text-white">Go</div>
       </div>
-      <div className="mt-4 text-sm leading-relaxed text-slate-300">{children}</div>
+      <div className="mt-4 text-sm leading-relaxed text-slate-700">{children}</div>
     </a>
   );
 }
@@ -81,7 +81,7 @@ export function StartConversationSection() {
 
 export function ReachUsDirectlySection() {
   return (
-    <section className="py-16">
+    <section className="py-10">
       <div className="container-page">
         <div className="text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-500">Reach Us Directly</p>
