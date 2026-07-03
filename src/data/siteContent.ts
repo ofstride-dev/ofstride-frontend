@@ -4,6 +4,8 @@ export const siteContent = {
     logo: "/assets/logo/logo.png",
     phone: "89516 06862",
     email: "support@ofstrideservices.com",
+    whatsapp: "+91 89516 06862",
+    phoneIntl: "+91-89516-06862",
   },
   hero: {
     badge: "Strategy, insight, and faster business decisions",
