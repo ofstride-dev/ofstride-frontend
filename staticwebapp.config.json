@@ -13,31 +13,6 @@
     ".json": "application/json"
   },
 
-  "auth": {
-    "identityProviders": {
-      "azureActiveDirectory": {
-        "userDetailsClaim": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier",
-        "enabled": false
-      }
-    },
-    "fileServer": {
-      "permissions": [
-        {
-          "roles": ["anonymous"],
-          "staticContentHeaders": [
-            {
-              "path": "/**",
-              "headers": {
-                "Cache-Control": "public, max-age=3600",
-                "X-Content-Type-Options": "nosniff"
-              }
-            }
-          ]
-        }
-      ]
-    }
-  },
-
   "responseOverrides": {
     "400": {
       "rewrite": "/404.html"
